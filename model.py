@@ -125,8 +125,27 @@ def gather_source_node_features(node_features, src):
     
     return out
 
-# Step 6 - scatter_sum_to_nodes (not yet solved)
-# TODO: implement
+# Step 6 - scatter_sum_to_nodes
+def scatter_sum_to_nodes(edge_features, dst, num_nodes):
+    """Scatter-sum edge features onto destination nodes to produce per-node aggregated vectors.
+
+    Args:
+        edge_features: FloatTensor of shape (E, F) with one feature row per edge.
+        dst: LongTensor of shape (E,) with destination node index for each edge.
+        num_nodes: int, number of nodes N in the graph.
+
+    Returns:
+        FloatTensor of shape (N, F); row j is the sum of edge features with dst == j.
+    """
+    # TODO: Scatter-sum edge features onto destination nodes to produce per-node vectors
+    e, f = edge_features.shape
+    out = torch.zeros((num_nodes,f),dtype=edge_features.dtype)
+
+    for j in range(num_nodes) : 
+        indices, = torch.where(dst == j)
+        out[j] = edge_features[indices].sum(dim=0)
+    
+    return out
 
 # Step 7 - scatter_mean_to_nodes (not yet solved)
 # TODO: implement
