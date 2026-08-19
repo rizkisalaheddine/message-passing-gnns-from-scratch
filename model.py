@@ -214,17 +214,15 @@ def aggregate_messages(messages, dst, num_nodes, aggr='sum'):
     e, m = messages.shape
     agg_msg = torch.zeros((num_nodes,m),dtype=torch.float32)
     
-    for i in range(num_nodes) :
-        indices, = torch.where(dst == i)
-        if indices.numel() > 0 :
-            if aggr == "sum" : 
-                agg_msg[i] = messages[indices].sum(dim=0)
-            elif aggr == "mean" : 
-                agg_msg[i] = (1/len(indices))*messages[indices].sum(dim=0)
-            elif aggr == "max" : 
-                agg_msg[i] = torch.max(messages[indices],dim=0).values
-        else : 
-            pass
+    if aggr == "sum" : 
+        agg_msg = scatter_sum_to_nodes(messages, dst, num_nodes)
+    elif aggr == "mean" : 
+        agg_msg = scatter_mean_to_nodes(messages, dst, num_nodes)
+    elif aggr == "max" : 
+        agg_msg = scatter_max_to_nodes(messages, dst, num_nodes)
+    else : 
+        raise ValueError("Not Supported type of aggregation")   
+    
     return agg_msg
 
 # Step 11 - update_node_features
