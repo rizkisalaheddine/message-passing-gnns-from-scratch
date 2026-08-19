@@ -255,11 +255,49 @@ def message_passing_layer(node_features, src, dst, message_fn, update_fn, aggr='
 
     return updated_features
 
-# Step 13 - stack_message_passing_layers (not yet solved)
-# TODO: implement
+# Step 13 - stack_message_passing_layers
+def stack_message_passing_layers(node_features, src, dst, layers, edge_attr=None):
+    """Apply a sequence of message-passing layer callables to produce deep node embeddings.
 
-# Step 14 - gcn_renormalize_adjacency (not yet solved)
-# TODO: implement
+    Args:
+        node_features: FloatTensor of shape (N, F).
+        src: LongTensor of shape (E,) source indices.
+        dst: LongTensor of shape (E,) destination indices.
+        layers: list of callables, each
+            layer(node_features, src, dst, edge_attr=None) -> Tensor (N, H_i).
+        edge_attr: optional FloatTensor of shape (E, Fe).
+
+    Returns:
+        embeddings: FloatTensor of shape (N, H), final layer output.
+        all_layer_outputs: list of FloatTensors, one per layer (N, H_i).
+    """
+    # TODO: Apply a sequence of MP layer callables; return final + intermediates
+    all_layer_outputs = []
+    embeddings = node_features
+    for layer in layers : 
+        embeddings = layer(embeddings, src, dst, edge_attr)
+        all_layer_outputs.append(embeddings)
+    return embeddings, all_layer_outputs
+
+# Step 14 - gcn_renormalize_adjacency
+def gcn_renormalize_adjacency(src, dst, num_nodes):
+    """Apply Kipf-Welling renormalization: self-loops then symmetric norm.
+
+    Args:
+        src: LongTensor [E] source node indices.
+        dst: LongTensor [E] destination node indices.
+        num_nodes: int, number of nodes N.
+
+    Returns:
+        src_hat: LongTensor [E + N] sources after self-loops.
+        dst_hat: LongTensor [E + N] destinations after self-loops.
+        norm_weight: FloatTensor [E + N] symmetrically normalized weights.
+    """
+    # TODO: add self-loops then symmetrically normalize the adjacency...
+    src_hat, dst_hat = add_self_loops(src, dst, num_nodes)
+    norm_weight = symmetric_normalize_edge_weights(src_hat, dst_hat, num_nodes)
+
+    return src_hat, dst_hat, norm_weight
 
 # Step 15 - gcn_linear_transform (not yet solved)
 # TODO: implement
