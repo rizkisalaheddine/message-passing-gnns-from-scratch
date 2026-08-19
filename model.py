@@ -360,12 +360,12 @@ def init_gcn_parameters(in_dim, out_dim, with_bias=True, seed=None):
     a = np.sqrt(6 / (in_dim + out_dim))
     weight = (2*a)*torch.rand(in_dim, out_dim) - a
 
-    out["weight"] = weight
+    out['weight'] = weight
     
     if with_bias == True : 
         bias = torch.zeros((out_dim,))
         
-        out["bias"] = bias
+        out['bias'] = bias
 
     return     out
 
@@ -390,11 +390,11 @@ def gcn_stack_forward(node_features, src, dst, param_list, activations=None, num
     embeddings = node_features
     if num_nodes == None : 
         num_nodes, _ = node_features.shape
-    for param in param_list : 
-        for activation in activations :
-            weight = param['weight']
-            bias = param["bias"]
-            embeddings = gcn_layer_forward(embeddings, src, dst, weight, bias, num_nodes, activation)
+
+    for i in range (len(param_list)):
+            weight = param_list[i]['weight']
+            bias = param_list[i]['bias']
+            embeddings = gcn_layer_forward(embeddings, src, dst, weight, bias, num_nodes, activations[i])
             all_layer_outputs.append(embeddings)
     return embeddings, all_layer_outputs
 
