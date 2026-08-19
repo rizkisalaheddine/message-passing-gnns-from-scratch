@@ -317,8 +317,39 @@ def gcn_linear_transform(node_features, weight, bias=None):
         out += bias
     return out
 
-# Step 16 - gcn_layer_forward (not yet solved)
-# TODO: implement
+# Step 16 - gcn_layer_forward
+def gcn_layer_forward(node_features, src, dst, weight, bias=None, num_nodes=None, activation=None):
+    """Forward pass of one GCN layer: renormalize, transform, propagate.
+
+    Args:
+        node_features: FloatTensor of shape (N, Fin).
+        src: LongTensor of shape (E,) source indices.
+        dst: LongTensor of shape (E,) destination indices.
+        weight: FloatTensor of shape (Fin, Fout).
+        bias: optional FloatTensor of shape (Fout,).
+        num_nodes: optional int N; defaults to node_features.shape[0].
+        activation: optional callable applied to the output.
+
+    Returns:
+        FloatTensor of shape (N, Fout).
+    """
+    # TODO: Forward pass of one GCN layer: renormalize, transform, propagate...
+    
+    if num_nodes == None : 
+        num_nodes, _ = node_features.shape
+    
+    src_hat, dst_hat, norm_weight = gcn_renormalize_adjacency(src, dst, num_nodes)
+    out = gcn_linear_transform(node_features, weight, bias)
+    propagate = torch.zeros_like(out)
+    propagate.index_add_(
+        0,
+        dst_hat,
+        out[src_hat] * norm_weight.unsqueeze(-1)
+    )
+     
+    if activation is not None : 
+        propagate = activation(propagate)
+    return propagate
 
 # Step 17 - init_gcn_parameters (not yet solved)
 # TODO: implement
