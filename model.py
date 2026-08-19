@@ -344,7 +344,7 @@ def gcn_layer_forward(node_features, src, dst, weight, bias=None, num_nodes=None
     propagate.index_add_(
         0,
         dst_hat,
-        out[src_hat] * norm_weight.unsqueeze(-1)
+        torch.multiply(out[src_hat] ,norm_weight.unsqueeze(-1))
     )
      
     if activation is not None : 
@@ -369,8 +369,34 @@ def init_gcn_parameters(in_dim, out_dim, with_bias=True, seed=None):
 
     return     out
 
-# Step 18 - gcn_stack_forward (not yet solved)
-# TODO: implement
+# Step 18 - gcn_stack_forward
+def gcn_stack_forward(node_features, src, dst, param_list, activations=None, num_nodes=None):
+    """Run a stack of GCN layers to produce deep node embeddings.
+
+    Args:
+        node_features: FloatTensor of shape (N, F0).
+        src: LongTensor of shape (E,) source indices.
+        dst: LongTensor of shape (E,) destination indices.
+        param_list: list of dicts, each with 'weight' (Fin, Fout) and optional 'bias' (Fout,).
+        activations: optional list of callables or None, one per layer.
+        num_nodes: optional int N; defaults to node_features.shape[0].
+
+    Returns:
+        embeddings: FloatTensor of shape (N, FL), the final layer output.
+        all_layer_outputs: list of FloatTensor outputs after each layer.
+    """
+    # TODO: Run a stack of GCN layers to produce deep node embeddings
+    all_layer_outputs = []
+    embeddings = node_features
+    if num_nodes == None : 
+        num_nodes, _ = node_features.shape
+    for param in param_list : 
+        for activation in activations :
+            weight = param['weight']
+            bias = param["bias"]
+            embeddings = gcn_layer_forward(embeddings, src, dst, weight, bias, num_nodes, activation)
+            all_layer_outputs.append(embeddings)
+    return embeddings, all_layer_outputs
 
 # Step 19 - gat_attention_logits (not yet solved)
 # TODO: implement
