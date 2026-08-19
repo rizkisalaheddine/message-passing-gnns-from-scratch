@@ -388,13 +388,19 @@ def gcn_stack_forward(node_features, src, dst, param_list, activations=None, num
     # TODO: Run a stack of GCN layers to produce deep node embeddings
     all_layer_outputs = []
     embeddings = node_features
+    
     if num_nodes == None : 
         num_nodes, _ = node_features.shape
 
     for i in range (len(param_list)):
             weight = param_list[i]['weight']
-            bias = param_list[i]['bias']
-            embeddings = gcn_layer_forward(embeddings, src, dst, weight, bias, num_nodes, activations[i])
+            bias = None
+            if "bias" in param_list[i].keys() :
+                bias = param_list[i]['bias']
+            if activations is not None: 
+                embeddings = gcn_layer_forward(embeddings, src, dst, weight, bias, num_nodes, activations[i])
+            else : 
+                embeddings = gcn_layer_forward(embeddings, src, dst, weight, bias, num_nodes)
             all_layer_outputs.append(embeddings)
     return embeddings, all_layer_outputs
 
