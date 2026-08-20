@@ -760,7 +760,7 @@ def build_node_classification_dataset(num_graphs, num_nodes, num_classes, p_in, 
     l=[]
     for g in range(num_graphs) : 
         if seed is not None : 
-            g_seed = seed * (1+g)
+            g_seed = seed * (1+g) # different seed for each graph
             torch.manual_seed(g_seed)
         l.append(generate_sbm_graph(num_nodes, num_classes, p_in, p_out, feature_dim, seed=g_seed))
     return l
