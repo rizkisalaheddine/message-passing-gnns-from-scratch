@@ -659,8 +659,19 @@ def global_sum_pool(node_features, batch_index, num_graphs=None):
         out[b] = torch.sum(node_features[indices],dim=0)
     return out
 
-# Step 28 - global_max_pool (not yet solved)
-# TODO: implement
+# Step 28 - global_max_pool
+def global_max_pool(node_features, batch_index, num_graphs=None):
+    # TODO: Globally max-pool node features into one graph-level vector per graph.
+    n, f = node_features.shape
+    if num_graphs is None : 
+        num_graphs  = batch_index.max() + 1
+    out = torch.full((num_graphs,f),float("-inf"),dtype=node_features.dtype,device=node_features.device)
+    for b in range(num_graphs) : 
+        indices = batch_index == b
+        if indices.any() : 
+            out[b] = torch.max(node_features[indices],dim=0).values
+        
+    return out
 
 # Step 29 - global_mean_max_pool (not yet solved)
 # TODO: implement
