@@ -452,6 +452,8 @@ def gat_masked_neighbor_softmax(logits, dst, num_nodes):
         #stable softmax by substracting alpha
         if lgs.numel()>0:
             alpha = max(lgs).item()
+        else :
+            alpha = float("-inf")
         out[idcs] =softmax(lgs-alpha)
         
     return out
@@ -513,8 +515,42 @@ def merge_gat_heads(head_outputs, mode='concat'):
         else : 
             raise ValueError("Not supported mode")
 
-# Step 23 - gat_layer_forward (not yet solved)
-# TODO: implement
+# Step 23 - gat_layer_forward
+def gat_layer_forward(node_features, src, dst, head_params, merge_mode='concat', num_nodes=None, activation=None):
+    """Multi-head GAT layer: run each head, merge, optional activation.
+
+    Args:
+        node_features: FloatTensor (N, Fin).
+        src: LongTensor (E,) source indices.
+        dst: LongTensor (E,) destination indices.
+        head_params: list of dicts with keys weight, attn_src, attn_dst,
+            and optional bias for each head.
+        merge_mode: 'concat' or 'mean'.
+        num_nodes: optional int N; inferred from node_features if None.
+        activation: optional callable applied after merging heads.
+
+    Returns:
+        out: FloatTensor (N, F_merged).
+        all_attn: list of FloatTensor (E,) attention coeffs per head.
+    """
+    # TODO: run each head, merge outputs, apply optional nonlinearity...
+    if num_nodes == None : 
+        num_nodes,_ = node_features.shape
+    all_attn = []
+    head_outputs = []
+    for i in range(len(head_params)) :
+        weight = head_params[i]["weight"]
+        attn_src = head_params[i]["attn_src"]
+        attn_dst =  head_params[i]["attn_dst"]
+        bias = head_params[i].get("bias",None)
+               
+        head_out, atts = gat_head_forward(node_features, src, dst, weight, attn_src, attn_dst, bias, num_nodes)
+        all_attn.append(atts)
+        head_outputs.append(head_out)
+    out = merge_gat_heads(head_outputs, merge_mode) 
+    if activation is not None : 
+        out = activation(out)
+    return out, all_attn
 
 # Step 24 - init_gat_parameters (not yet solved)
 # TODO: implement
