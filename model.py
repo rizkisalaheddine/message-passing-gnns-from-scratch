@@ -450,13 +450,47 @@ def gat_masked_neighbor_softmax(logits, dst, num_nodes):
         idcs = dst == i 
         lgs = logits[idcs]
         #stable softmax by substracting alpha
-        alpha = max(lgs).item()
+        if lgs.numel()>0:
+            alpha = max(lgs).item()
         out[idcs] =softmax(lgs-alpha)
         
     return out
 
-# Step 21 - gat_head_forward (not yet solved)
-# TODO: implement
+# Step 21 - gat_head_forward
+def gat_head_forward(node_features, src, dst, weight, attn_src, attn_dst, bias=None, num_nodes=None, activation=None):
+    """Forward pass of a single GAT attention head.
+
+    Args:
+        node_features: FloatTensor of shape (N, Fin).
+        src: LongTensor of shape (E,) source indices.
+        dst: LongTensor of shape (E,) destination indices.
+        weight: FloatTensor of shape (Fin, Fout) shared linear transform.
+        attn_src: FloatTensor of shape (Fout,) source attention vector.
+        attn_dst: FloatTensor of shape (Fout,) destination attention vector.
+        bias: optional FloatTensor of shape (Fout,).
+        num_nodes: optional int N; inferred from node_features if None.
+        activation: optional callable applied to the head output.
+
+    Returns:
+        head_out: FloatTensor of shape (N, Fout).
+        attn_coeffs: FloatTensor of shape (E,) attention coefficients.
+    """
+    # TODO: Forward pass of a single GAT attention head: transform, coeffs, aggregate...
+    
+
+    if num_nodes == None : 
+        num_nodes, _  = node_features.shape
+        
+    logits, transformed = gat_attention_logits(node_features, src, dst, attn_src, attn_dst, weight)
+    head_out = torch.zeros_like(transformed)
+    att_coeff = gat_masked_neighbor_softmax(logits, dst, num_nodes)
+    for i in range(num_nodes) : 
+        head_out[i] = (att_coeff[dst==i].unsqueeze(-1)*transformed[src[dst==i]]).sum(dim=0)
+    if bias != None : 
+            head_out += bias   
+    if activation is not None : 
+        head_out = activation(head_out)
+    return head_out, att_coeff
 
 # Step 22 - merge_gat_heads (not yet solved)
 # TODO: implement
