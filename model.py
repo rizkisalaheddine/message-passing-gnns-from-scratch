@@ -552,8 +552,28 @@ def gat_layer_forward(node_features, src, dst, head_params, merge_mode='concat',
         out = activation(out)
     return out, all_attn
 
-# Step 24 - init_gat_parameters (not yet solved)
-# TODO: implement
+# Step 24 - init_gat_parameters
+def init_gat_parameters(in_dim, out_dim, num_heads=1, with_bias=True, seed=None):
+    # TODO: Initialize multi-head GAT parameters with Glorot-style initialization.
+    if seed is not None : 
+        torch.manual_seed(seed)
+    a_w = np.sqrt(6/(in_dim+out_dim))
+    a_a = np.sqrt(6/(out_dim+1))
+    out = []
+    
+    for i in range(num_heads) : 
+        param = {}
+        weight = (2*a_w) * torch.rand((in_dim,out_dim),requires_grad=True) - a_w
+        attn_src = (2*a_a) * torch.rand((out_dim,),requires_grad=True) - a_a
+        attn_dst = (2*a_a) * torch.rand((out_dim,),requires_grad=True) - a_a
+        if with_bias is True : 
+            bias = torch.zeros((out_dim,),requires_grad=True)
+            param["bias"] = bias
+        param["weight"] = weight
+        param["attn_src"] = attn_src
+        param["attn_dst"] = attn_dst
+        out.append(param)
+    return out
 
 # Step 25 - gat_stack_forward (not yet solved)
 # TODO: implement
