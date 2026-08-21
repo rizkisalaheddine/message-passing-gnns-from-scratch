@@ -906,8 +906,67 @@ def gnn_train_step(params, batch, forward_fn, loss_fn, lr):
         "params" : params
     }
 
-# Step 42 - train_node_classifier (not yet solved)
-# TODO: implement
+# Step 42 - train_node_classifier
+def train_node_classifier(params, dataset, forward_fn, num_epochs, lr, mask_key='train_mask'):
+    # TODO: Train a functional node-classification GNN for several epochs on a masked graph
+    history = {
+        "loss": [],
+        "accuracy": []
+    }
+    mask = dataset[mask_key]
+    x = dataset["x"]
+    y = dataset["y"]
+    edge_index = dataset["edge_index"]
+
+    history = []
+
+    batch = {
+        "x": x,
+        "edge_index": edge_index,
+        "mask": mask,
+        "y": y[mask]
+    }
+
+    def wrapped_forward(params, batch):
+        logits = forward_fn(
+            params,
+            batch["x"],
+            batch["edge_index"]
+        )
+        return logits[batch["mask"]]
+
+
+    def masked_loss(logits, targets):
+        return cross_entropy_loss(logits[mask],targets[mask])
+
+    for epoch in range(num_epochs):
+        step = gnn_train_step(
+            params,
+            batch,
+            wrapped_forward,
+            cross_entropy_loss,
+            lr
+        )
+
+        params = step["params"]
+
+        with torch.no_grad():
+            logits = forward_fn(params, x, edge_index)
+
+            acc = accuracy_metric(
+                logits[mask],
+                y[mask]
+            )
+
+        history.append({
+            "loss": step["loss"],
+            "accuracy": acc.item() if torch.is_tensor(acc) else float(acc)
+        })
+
+    return {
+        "history": history,
+        "params": params
+    }
 
 # Step 43 - train_graph_regressor (not yet solved)
 # TODO: implement
