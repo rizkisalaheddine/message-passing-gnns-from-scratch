@@ -765,8 +765,40 @@ def build_node_classification_dataset(num_graphs, num_nodes, num_classes, p_in, 
         l.append(generate_sbm_graph(num_nodes, num_classes, p_in, p_out, feature_dim, seed=g_seed))
     return l
 
-# Step 34 - generate_molecule_like_graph (not yet solved)
-# TODO: implement
+# Step 34 - generate_molecule_like_graph
+def generate_molecule_like_graph(num_nodes, num_node_features, edge_prob=0.3, seed=0):
+    # TODO: Synthesize one molecule-like graph with features, edges, and target...
+    torch.manual_seed(seed)
+    out = {}
+    x = torch.randn((num_nodes,num_node_features),dtype=torch.float32)
+    nodes = torch.tensor([i for i in range(num_nodes)],dtype=torch.long)
+
+    pairs = torch.combinations(nodes,r=2)
+
+    pairs = torch.permute(pairs,(1,0))
+
+    
+    probs = torch.tensor([torch.rand(1).item() < edge_prob for _ in range(pairs.shape[1])],dtype=torch.bool)
+
+    edge_index_1  = pairs[:,probs]
+    edge_index_2 = edge_index_1[[1,0]]
+    edge_index = torch.cat((edge_index_1,edge_index_2),dim=1)
+    degrees = compute_node_degrees(edge_index[0], edge_index[1], num_nodes, edge_weight=None)
+
+    y = 0
+    y= torch.tensor(y,dtype=torch.float32)
+    for v in range(num_nodes) : 
+        deg_v = degrees[v]
+        a = x[v].mean()
+        y += deg_v * a
+    
+    y = y/num_nodes
+
+    out["x"] = x
+    out["edge_index"] = edge_index
+    out["y"] = y 
+
+    return out
 
 # Step 35 - build_graph_regression_dataset (not yet solved)
 # TODO: implement
