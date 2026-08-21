@@ -800,8 +800,16 @@ def generate_molecule_like_graph(num_nodes, num_node_features, edge_prob=0.3, se
 
     return out
 
-# Step 35 - build_graph_regression_dataset (not yet solved)
-# TODO: implement
+# Step 35 - build_graph_regression_dataset
+def build_graph_regression_dataset(num_graphs, num_nodes_range, num_node_features, edge_prob=0.3, seed=0):
+    # TODO: Build a list of molecule-like graphs for graph-level regression.
+    out = []
+    for g in range(num_graphs) : 
+        torch.manual_seed(seed+g)
+        lo, hi = num_nodes_range
+        num_nodes = lo + (g % (hi - lo + 1))
+        out.append(generate_molecule_like_graph(num_nodes, num_node_features, edge_prob, seed=seed+g))
+    return out
 
 # Step 36 - collate_graph_batch (not yet solved)
 # TODO: implement
