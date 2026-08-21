@@ -875,8 +875,15 @@ def accuracy_metric(logits, targets):
     
     return torch.mean((predictions==targets).float())
 
-# Step 40 - mae_metric (not yet solved)
-# TODO: implement
+# Step 40 - mae_metric
+def mae_metric(predictions, targets):
+    # TODO: Compute mean absolute error between predicted and target continuous values.
+    predictions = torch.flatten(predictions)
+    targets = torch.flatten(targets)
+
+    loss = predictions - targets 
+    loss = torch.abs(loss)
+    return torch.mean(loss,dim=0)
 
 # Step 41 - gnn_train_step (not yet solved)
 # TODO: implement
