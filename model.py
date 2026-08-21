@@ -968,8 +968,50 @@ def train_node_classifier(params, dataset, forward_fn, num_epochs, lr, mask_key=
         "params": params
     }
 
-# Step 43 - train_graph_regressor (not yet solved)
-# TODO: implement
+# Step 43 - train_graph_regressor
+def train_graph_regressor(params, graphs, forward_fn, num_epochs, lr, batch_size=8):
+    """Train a graph regressor over multiple epochs of mini-batches.
+
+    Args:
+        params: dict of trainable torch tensors.
+        graphs: list of graph dicts with keys x, edge_index, y.
+        forward_fn: callable(params, batch) -> predictions.
+        num_epochs: number of training epochs.
+        lr: learning rate for SGD updates.
+        batch_size: graphs per mini-batch (default 8).
+
+    Returns:
+        history: dict with 'loss' and 'mae' lists of per-epoch floats.
+        params: updated parameter dict.
+    """
+    # TODO: Train a graph regressor over epochs of mini-batches, tracking loss and MAE
+    history = {
+        "loss" : [],
+        "mae" : [] 
+    }
+
+    n = len(graphs)
+    for e in range(num_epochs) : 
+        total_loss = 0.0
+        n_batches = 0
+        indices = torch.randperm(n).tolist()
+        for start in range(0,n,batch_size):
+            batch_indices = indices[start:start + batch_size]
+            selected_graphs = [graphs[i] for i in batch_indices]
+            batch = collate_graph_batch(selected_graphs) 
+            result = gnn_train_step(params,batch,forward_fn,mse_loss,lr)
+            total_loss += result["loss"]
+            n_batches += 1
+
+        history["loss"].append((1/n_batches) * total_loss)
+        
+        with torch.no_grad() : 
+            full_batch = collate_graph_batch(graphs) 
+            preds = forward_fn(params,full_batch)
+             
+            history["mae"].append(float(mae_metric(preds, full_batch["y"])))
+
+    return history, result["params"]
 
 # Step 44 - representation_similarity (not yet solved)
 # TODO: implement
