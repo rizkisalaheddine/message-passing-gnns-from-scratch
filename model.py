@@ -865,8 +865,15 @@ def mse_loss(predictions, targets):
     loss = torch.pow(loss,2)
     return torch.mean(loss,dim=0)
 
-# Step 39 - accuracy_metric (not yet solved)
-# TODO: implement
+# Step 39 - accuracy_metric
+def accuracy_metric(logits, targets):
+    # TODO: Return the fraction of argmax(logits) predictions matching targets.
+
+    m, c  = logits.shape
+
+    predictions = torch.argmax(logits,dim=1)
+    
+    return torch.mean((predictions==targets).float())
 
 # Step 40 - mae_metric (not yet solved)
 # TODO: implement
