@@ -811,8 +811,36 @@ def build_graph_regression_dataset(num_graphs, num_nodes_range, num_node_feature
         out.append(generate_molecule_like_graph(num_nodes, num_node_features, edge_prob, seed=seed+g))
     return out
 
-# Step 36 - collate_graph_batch (not yet solved)
-# TODO: implement
+# Step 36 - collate_graph_batch
+def collate_graph_batch(graphs):
+    # TODO: Combine variable-size graphs into one disconnected batched graph.
+    edge_index = []
+    batch = []
+    x = []
+    y = []
+    out = {}
+    node_offset = 0
+    for g in range(len(graphs)) : 
+        if isinstance(graphs[g]["y"],float) : 
+            y_g = torch.tensor(graphs[g]["y"],dtype=torch.float32)
+        else :
+            y_g = graphs[g]["y"]
+        x_g = graphs[g]["x"]
+        edge_index_g = graphs[g]["edge_index"] + node_offset
+
+        node_offset+=x_g.shape[0]
+        batch.append(torch.full((x_g.shape[0],),g,dtype=torch.long))
+        x.append(x_g)
+        y.append(y_g)
+        edge_index.append(edge_index_g)
+    
+    out["edge_index"] = torch.cat([x for x in edge_index],1) 
+    out["batch"] = torch.cat([x for x in batch])
+    out["x"] =  torch.cat([f for f in x],dim=0)
+    out["y"] = torch.stack([x for x in y])
+
+    
+    return out
 
 # Step 37 - cross_entropy_loss (not yet solved)
 # TODO: implement
